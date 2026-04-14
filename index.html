@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NRS - National Rail System</title>
+    <!-- Use Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <img src="assets/logo.png" alt="NRS Logo" class="logo-img">
+                <div class="logo-text">
+                    <h1>NRS</h1>
+                    <p>National Rail System</p>
+                </div>
+            </div>
+            <div class="nav-links">
+                <a href="javascript:void(0);" onclick="app.navigate('dashboard')" class="nav-link"><i
+                        class="fa-solid fa-house"></i> Home</a>
+                <a href="javascript:void(0);" onclick="app.navigate('contact')" class="nav-link"><i
+                        class="fa-solid fa-phone"></i> Contact Us</a>
+                <span id="user-display" class="user-display" style="display: none;">
+                    <i class="fa-solid fa-user"></i> <span id="username-text">User</span>
+                    <button onclick="app.logout()" class="btn-sm btn-outline">Logout</button>
+                </span>
+                <button id="login-nav-btn" onclick="app.navigate('login')" class="btn-primary"><i
+                        class="fa-solid fa-right-to-bracket"></i> Login</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container for SPA -->
+    <main id="app-container">
+
+        <!-- SECTION: LOGIN/SIGNUP -->
+        <section id="sec-login" class="page-section active">
+            <div class="auth-container">
+                <div class="auth-card">
+                    <div class="auth-header">
+                        <h2>Welcome to NRS</h2>
+                        <p>Login to book your tickets seamlessly</p>
+                    </div>
+                    <form id="login-form" onsubmit="app.handleLogin(event)">
+                        <div class="form-group">
+                            <label><i class="fa-solid fa-envelope"></i> Email or Username</label>
+                            <input type="text" id="login-username" required placeholder="Enter username">
+                        </div>
+                        <div class="form-group">
+                            <label><i class="fa-solid fa-lock"></i> Password</label>
+                            <input type="password" id="login-password" required placeholder="Enter password">
+                        </div>
+                        <button type="submit" class="btn-primary w-100 btn-large">Login</button>
+                    </form>
+                    <div class="auth-divider"><span>OR</span></div>
+                    <button onclick="app.handleGuestLogin()" class="btn-outline w-100">Continue as Guest</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION: DASHBOARD (Search) -->
+        <section id="sec-dashboard" class="page-section" style="display: none;">
+            <div class="hero-section">
+                <!-- API Key Notice (only shows if API key missing) -->
+                <div id="api-key-banner" class="alert-banner">
+                    <div>
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <span><strong>API Key Missing!</strong> The system will use Mock Data. To use live train data,
+                            enter your IndianRailAPI key.</span>
+                    </div>
+                    <button onclick="app.promptApiKey()" class="btn-sm btn-white">Set API Key</button>
+                </div>
+
+                <div class="search-box">
+                    <div class="search-tabs">
+                        <button class="tab-btn active" onclick="app.switchTab('between-stations')">
+                            <i class="fa-solid fa-route"></i> Book Ticket
+                        </button>
+                        <button class="tab-btn" onclick="app.switchTab('train-schedule')">
+                            <i class="fa-solid fa-clock"></i> Train Schedule
+                        </button>
+                        <button class="tab-btn" onclick="app.switchTab('train-info')">
+                            <i class="fa-solid fa-train"></i> Train Info
+                        </button>
+                    </div>
+
+                    <!-- Tab Content: Between Stations -->
+                    <div id="tab-between-stations" class="tab-content active">
+                        <form id="search-trains-form" class="search-form" onsubmit="app.searchTrains(event)">
+                            <div class="form-row">
+                                <div class="form-group half">
+                                    <label>From <i class="fa-solid fa-location-dot"></i></label>
+                                    <input type="text" id="search-from" placeholder="Station Code (e.g., NDLS)"
+                                        required>
+                                </div>
+                                <div class="form-switch-icon" onclick="app.swapStations()">
+                                    <i class="fa-solid fa-right-left"></i>
+                                </div>
+                                <div class="form-group half">
+                                    <label>To <i class="fa-solid fa-location-dot"></i></label>
+                                    <input type="text" id="search-to" placeholder="Station Code (e.g., BCT)" required>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Journey Date <i class="fa-solid fa-calendar"></i></label>
+                                    <input type="date" id="search-date" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Classes <i class="fa-solid fa-layer-group"></i></label>
+                                    <select id="search-class">
+                                        <option value="All">All Classes</option>
+                                        <option value="1A">Anubhuti Class (EA)</option>
+                                        <option value="1A">AC First Class (1A)</option>
+                                        <option value="2A">AC 2 Tier (2A)</option>
+                                        <option value="3A">AC 3 Tier (3A)</option>
+                                        <option value="SL">Sleeper (SL)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn-primary btn-large search-btn">Search Trains <i
+                                    class="fa-solid fa-magnifying-glass"></i></button>
+                        </form>
+                    </div>
+
+                    <!-- Tab Content: Schedule -->
+                    <div id="tab-train-schedule" class="tab-content" style="display: none;">
+                        <form id="search-schedule-form" class="search-form" onsubmit="app.searchSchedule(event)">
+                            <div class="form-group">
+                                <label>Train Number</label>
+                                <input type="text" id="schedule-train-no" placeholder="e.g., 12004" required>
+                            </div>
+                            <button type="submit" class="btn-primary search-btn">Get Schedule</button>
+                        </form>
+                    </div>
+
+                    <!-- Tab Content: Info -->
+                    <div id="tab-train-info" class="tab-content" style="display: none;">
+                        <form id="search-info-form" class="search-form" onsubmit="app.searchInfo(event)">
+                            <div class="form-group">
+                                <label>Train Number</label>
+                                <input type="text" id="info-train-no" placeholder="e.g., 12004" required>
+                            </div>
+                            <button type="submit" class="btn-primary search-btn">Get Info</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loader -->
+            <div id="search-loader" class="loader-container" style="display: none;">
+                <div class="spinner"></div>
+                <p>Fetching details from servers...</p>
+            </div>
+
+            <!-- Results Section for Search Trains -->
+            <div id="search-results-container" class="results-container" style="display: none;">
+                <h2>Available Trains</h2>
+                <div id="trains-list" class="trains-list">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- Specific View for Schedule and Info -->
+            <div id="single-result-container" class="results-container single-result" style="display: none;">
+                <!-- Populated by JS -->
+            </div>
+        </section>
+
+        <!-- SECTION: BOOKING DETAILS -->
+        <section id="sec-booking" class="page-section" style="display: none;">
+            <div class="container section-padding">
+                <div class="booking-grid">
+                    <div class="booking-main">
+                        <div class="card mb-4" id="booking-train-summary">
+                            <!-- Populated by JS -->
+                        </div>
+                        <div class="card">
+                            <h3><i class="fa-solid fa-users"></i> Passenger Details</h3>
+                            <form id="passenger-form" onsubmit="app.proceedToPayment(event)">
+                                <div class="passenger-rows" id="passenger-rows">
+                                    <div class="passenger-row form-row">
+                                        <div class="form-group p-name">
+                                            <label>Name</label>
+                                            <input type="text" class="pass-name" required placeholder="Passenger Name">
+                                        </div>
+                                        <div class="form-group p-age">
+                                            <label>Age</label>
+                                            <input type="number" class="pass-age" required min="1" max="120"
+                                                placeholder="Age">
+                                        </div>
+                                        <div class="form-group p-gender">
+                                            <label>Gender</label>
+                                            <select class="pass-gender" required>
+                                                <option value="M">Male</option>
+                                                <option value="F">Female</option>
+                                                <option value="T">Transgender</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group p-berth">
+                                            <label>Berth Pref</label>
+                                            <select class="pass-berth">
+                                                <option value="No Preference">No Preference</option>
+                                                <option value="Lower">Lower</option>
+                                                <option value="Middle">Middle</option>
+                                                <option value="Upper">Upper</option>
+                                                <option value="Side Lower">Side Lower</option>
+                                                <option value="Side Upper">Side Upper</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn-outline btn-sm mb-4" onclick="app.addPassengerRow()"><i
+                                        class="fa-solid fa-plus"></i> Add Passenger</button>
+
+                                <div class="contact-details mt-4">
+                                    <h3><i class="fa-solid fa-address-book"></i> Contact Details</h3>
+                                    <div class="form-group">
+                                        <label>Email ID</label>
+                                        <input type="email" id="contact-email" required
+                                            placeholder="Ticket will be sent here">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Mobile Number</label>
+                                        <input type="tel" id="contact-phone" required pattern="[0-9]{10}"
+                                            placeholder="10 digit mobile">
+                                    </div>
+                                </div>
+                                <div class="action-bar mt-4">
+                                    <button type="button" class="btn-outline"
+                                        onclick="app.navigate('dashboard')">Cancel</button>
+                                    <button type="submit" class="btn-primary btn-large">Continue to Payment <i
+                                            class="fa-solid fa-arrow-right"></i></button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION: PAYMENT (Fake Razorpay) -->
+        <section id="sec-payment" class="page-section" style="display: none;">
+            <div class="razorpay-container">
+                <div class="razorpay-card">
+                    <div class="razor-header">
+                        <div class="merchant-info">
+                            <i class="fa-solid fa-wallet fa-2x"></i>
+                            <div>
+                                <h3>NRS Ticketing</h3>
+                                <p id="razor-amount">₹0.00</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="razor-body">
+                        <div class="payment-methods">
+                            <h4>Select Payment Method</h4>
+                            <div class="method-option active">
+                                <i class="fa-brands fa-google-pay"></i> UPI (GPay, PhonePe)
+                            </div>
+                            <div class="method-option">
+                                <i class="fa-solid fa-credit-card"></i> Card (Visa, MasterCard)
+                            </div>
+                            <div class="method-option">
+                                <i class="fa-solid fa-building-columns"></i> Netbanking
+                            </div>
+                        </div>
+                        <div class="payment-details">
+                            <div class="form-group">
+                                <label>UPI ID</label>
+                                <input type="text" placeholder="username@upi" required id="dummy-upi">
+                            </div>
+                            <button id="razor-pay-btn" class="btn-razorpay w-100" onclick="app.simulatePayment()">
+                                Pay Now
+                            </button>
+                        </div>
+                    </div>
+                    <div id="payment-processing" class="payment-processing" style="display: none;">
+                        <i class="fa-solid fa-circle-notch fa-spin fa-3x"></i>
+                        <h3>Processing Payment...</h3>
+                        <p>Please do not close or refresh this window.</p>
+                    </div>
+                    <div id="payment-success" class="payment-success" style="display: none;">
+                        <i class="fa-solid fa-circle-check fa-3x"></i>
+                        <h3>Payment Successful!</h3>
+                        <p>Generating your ticket...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION: TICKET -->
+        <section id="sec-ticket" class="page-section" style="display: none;">
+            <div class="container section-padding">
+                <div class="action-bar ticket-actions">
+                    <h2><i class="fa-solid fa-ticket"></i> E-Ticket Booking Details</h2>
+                    <div>
+                        <button class="btn-outline" onclick="window.print()"><i class="fa-solid fa-print"></i> Print
+                            Ticket</button>
+                        <button class="btn-primary" onclick="app.navigate('dashboard')"><i
+                                class="fa-solid fa-house"></i> Go Home</button>
+                    </div>
+                </div>
+
+                <div id="printable-ticket" class="ticket-card">
+                    <div class="ticket-header">
+                        <img src="assets/logo.png" alt="NRS Logo" class="ticket-logo">
+                        <div class="ticket-title">
+                            <h3>National Rail System</h3>
+                            <p>Electronic Reservation Slip (ERS)</p>
+                        </div>
+                        <div class="qrcode">
+                            <i class="fa-solid fa-qrcode fa-3x"></i>
+                        </div>
+                    </div>
+
+                    <div class="ticket-body">
+                        <div class="pnr-bar">
+                            <span class="pnr-label">PNR No:</span>
+                            <span class="pnr-value" id="ticket-pnr">1234567890</span>
+                        </div>
+
+                        <div class="journey-info" id="ticket-journey">
+                            <!-- Populated by JS -->
+                        </div>
+
+                        <div class="passenger-list-container mt-4">
+                            <h4>Passenger Information</h4>
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Age</th>
+                                        <th>Gender</th>
+                                        <th>Booking Status / Coach / Seat / Berth</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ticket-passengers">
+                                    <!-- Populated by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="fare-info mt-4">
+                            <h4>Fare Details</h4>
+                            <table class="data-table">
+                                <tr>
+                                    <td>Ticket Fare:</td>
+                                    <td id="ticket-fare">₹0.00</td>
+                                </tr>
+                                <tr>
+                                    <td>Convenience Fee (Incl. of GST):</td>
+                                    <td>₹17.70</td>
+                                </tr>
+                                <tr>
+                                    <th>Total Fare:</th>
+                                    <th id="ticket-total">₹0.00</th>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="ticket-footer">
+                        <p><strong>Important:</strong> Passengers must carry original valid Identity Proof during
+                            journey. Ensure arriving at the station 45 minutes prior to departure.</p>
+                        <p>Powered by NRS - A fake clone for project purposes.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION: CONTACT US -->
+        <section id="sec-contact" class="page-section" style="display: none;">
+            <div class="container section-padding">
+                <div class="auth-card" style="max-width: 600px; margin: 0 auto; text-align: left;">
+                    <div class="auth-header" style="text-align: center;">
+                        <h2>Contact Us</h2>
+                        <p>We'd love to hear from you!</p>
+                    </div>
+                    <form
+                        onsubmit="event.preventDefault(); alert('Message sent successfully!'); app.navigate('dashboard');">
+                        <div class="form-group">
+                            <label>Name</label>
+                            <input type="text" required placeholder="Your Name">
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" required placeholder="Your Email">
+                        </div>
+                        <div class="form-group">
+                            <label>Message</label>
+                            <textarea required placeholder="How can we help you?"
+                                style="width: 100%; border: 1px solid var(--border-color); border-radius: 6px; padding: 0.75rem; font-family: 'Inter';"
+                                rows="5"></textarea>
+                        </div>
+                        <button type="submit" class="btn-primary w-100 btn-large">Send Message <i
+                                class="fa-solid fa-paper-plane"></i></button>
+                    </form>
+                    <div class="mt-4" style="text-align: center; color: var(--text-muted);">
+                        <p><i class="fa-solid fa-envelope"></i> support@nationalrailsystem.com</p>
+
+                        <p><i class="fa-solid fa-phone"></i> 1800-111-2222 (Toll Free)</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Global Footer -->
+    <footer class="app-footer">
+        <div class="footer-content">
+            <p>Made with <i class="fa-solid fa-heart" style="color: #ef4444; animation: pulse 1.5s infinite;"></i> by <a
+                    href="https://www.linkedin.com/in/aryan-goud/" target="_blank" class="author-link">Aryan</a></p>
+            <div class="personal-demo">
+                <span><i class="fa-solid fa-envelope"></i> aryangoud2023@gmail.com</span>
+                <span class="divider">|</span>
+                <span><i class="fa-solid fa-phone"></i> +91 99999 00000</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="app.js"></script>
+</body>
+
+</html>
